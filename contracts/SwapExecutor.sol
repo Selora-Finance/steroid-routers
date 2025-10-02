@@ -8,6 +8,11 @@ import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
 contract SwapExecutor is Ownable {
     using SafeERC20 for IERC20;
 
+    enum SwapType {
+        ALLOW_ZEROS,
+        EXACT_OUT
+    }
+
     struct QueryResult {
         address tokenIn;
         address tokenOut;
@@ -17,23 +22,34 @@ contract SwapExecutor is Ownable {
     }
 
     IBaseRouter[] public routers;
-    uint24 public swapFeePercentage;
+    uint64 public swapFeePercentage;
     IWETH public weth;
 
     address public constant ETHER = address(0x000);
+    address[] public trustedTokens;
+    uint64 public constant MAX_FEE_PERCENTAGE = 5000; // 5%
+    uint64 public constant MAX_PERCENTAGE = 100000; // 100%
 
     mapping(address => bool) public isActiveRouter;
 
     error NoActiveRouters();
     error InvalidContract(address addr);
+    error NoSwapRoute(address tokenA, address tokenB);
+    error FeePercentageTooHigh();
+    error InsufficientAmountOut();
 
     constructor(
         address newOwner,
         IBaseRouter[] memory _routers,
-        uint24 _swapFeePercentage,
-        IWETH _weth
+        uint64 _swapFeePercentage,
+        IWETH _weth,
+        address[] memory _trustedTokens
     ) Ownable(newOwner) {
         addRouters(_routers);
+        setTrustedTokens(_trustedTokens);
+
+        if (_swapFeePercentage > MAX_FEE_PERCENTAGE) revert FeePercentageTooHigh();
+
         swapFeePercentage = _swapFeePercentage;
         weth = _weth;
     }
@@ -47,12 +63,10 @@ contract SwapExecutor is Ownable {
         address tokenA,
         address tokenB,
         uint256 amountIn,
+        uint256 amountOut,
         bool exactAmountOut
     ) private {
-        uint256 amountOut = 0; // Start with zero
-        if (exactAmountOut) {
-            amountOut = router.query(tokenA, tokenB, amountIn);
-        }
+        if (!exactAmountOut) amountOut = 0;
         // Approve spend
         _approveTokenSpend(router, IERC20(tokenA), amountIn);
         // Swap to self
@@ -103,12 +117,99 @@ contract SwapExecutor is Ownable {
         }
     }
 
+    function setTrustedTokens(address[] memory _trustedTokens) public onlyOwner {
+        trustedTokens = _trustedTokens;
+    }
+
     function switchRouterActiveStatus(IBaseRouter router) external onlyOwner {
         require(_checkIfIsRouter(router), 'Unknown router');
         isActiveRouter[address(router)] = !isActiveRouter[address(router)];
     }
 
-    function execute(address tokenA, address tokenB, uint256 amountIn) external payable {
+    function query(
+        address tokenA,
+        address tokenB,
+        uint256 amountIn
+    ) public view returns (QueryResult memory bestResult) {
+        IBaseRouter[] memory activeRouters = _filterActiveRouters();
+        if (activeRouters.length == 0) revert NoActiveRouters(); // We need routers to execute query
+        for (uint i = 0; i < activeRouters.length; i++) {
+            IBaseRouter router = activeRouters[i];
+            QueryResult memory qr = _query(router, tokenA, tokenB, amountIn);
+            if (qr.amountOut > bestResult.amountOut) bestResult = qr;
+        }
+    }
+
+    function _emptyQueryResults() private view returns (QueryResult[] memory) {
+        QueryResult[] memory emptyResult;
+        return emptyResult;
+    }
+
+    function _findBestRoute(
+        address tokenA,
+        address tokenB,
+        uint256 amountIn,
+        QueryResult[] memory previousResults,
+        bool skipTrustedTokens
+    ) private view returns (QueryResult[] memory) {
+        QueryResult memory firstQR = query(tokenA, tokenB, amountIn);
+        QueryResult[] memory finalResults = previousResults;
+
+        if (firstQR.amountOut != 0) {
+            if (finalResults.length == 0) finalResults[0] = firstQR;
+            else finalResults[finalResults.length] = firstQR;
+            return finalResults; // Return earlier
+        }
+
+        // Only check if we don't want to skip trusted tokens
+        if (!skipTrustedTokens) {
+            for (uint i = 0; i < trustedTokens.length; i++) {
+                if (trustedTokens[i] == tokenA) continue;
+                QueryResult memory bestResult = query(tokenA, trustedTokens[i], amountIn);
+                if (bestResult.amountOut == 0) continue;
+                if (finalResults.length == 0) finalResults[0] = bestResult;
+                else finalResults[finalResults.length] = bestResult;
+
+                finalResults = _findBestRoute(
+                    trustedTokens[i],
+                    tokenB,
+                    bestResult.amountOut,
+                    finalResults,
+                    trustedTokens[i] == trustedTokens[trustedTokens.length - 1]
+                ); // Recursion
+                QueryResult memory newQR = finalResults[finalResults.length - 1];
+                address tokenOut = newQR.tokenOut;
+                uint256 amountOut = newQR.amountOut;
+
+                if (tokenOut == tokenB && amountOut != 0) return finalResults;
+            }
+        }
+
+        return _emptyQueryResults();
+    }
+
+    function _calculateEcosystemCommission(uint256 amount) private view returns (uint256) {
+        if (swapFeePercentage == 0) return 0;
+        uint256 commission = (swapFeePercentage * amount) / MAX_PERCENTAGE;
+        return commission;
+    }
+
+    function findBestRoute(
+        address tokenA,
+        address tokenB,
+        uint256 amountIn
+    ) public view returns (QueryResult[] memory results) {
+        results = _findBestRoute(tokenA, tokenB, amountIn, _emptyQueryResults(), false);
+    }
+
+    function execute(
+        address tokenA,
+        address tokenB,
+        address to,
+        uint256 amountIn,
+        uint256 amountOut,
+        SwapType swapType
+    ) external payable {
         // Wrap if first token is Ether or zero address
         if (tokenA == ETHER || tokenA == address(0)) {
             require(msg.value > 0, 'No zero value');
@@ -120,9 +221,45 @@ contract SwapExecutor is Ownable {
             IERC20(tokenA).transferFrom(msg.sender, address(this), amountIn); // Transfer token from sender
         }
 
-        IBaseRouter[] memory activeRouters = _filterActiveRouters();
-        if (activeRouters.length == 0) revert NoActiveRouters(); // We need routers to execute the swap
-        QueryResult[] memory results; // Store query results for each router
-        for (uint i = 0; i < activeRouters.length; i++) {}
+        if (tokenB == ETHER || tokenB == address(0)) tokenB = address(weth);
+        if (tokenB.code.length == 0) revert InvalidContract(tokenB); // Token B must be contract
+
+        // Record balance before swap. This is to check and prevent overspending
+        uint256 balanceBBefore = IERC20(tokenB).balanceOf(address(this));
+
+        QueryResult[] memory bestRoute = findBestRoute(tokenA, tokenB, amountIn);
+        if (bestRoute.length == 0) revert NoSwapRoute(tokenA, tokenB);
+
+        // Execute swaps sequentially
+        for (uint i = 0; i < bestRoute.length; i++) {
+            QueryResult memory route = bestRoute[i];
+            _executeSwapOnRouter(
+                route.router,
+                route.tokenIn,
+                route.tokenOut,
+                route.amountIn,
+                route.amountOut,
+                swapType == SwapType.EXACT_OUT
+            );
+        }
+
+        // Balance after
+        uint256 balanceBAfter = IERC20(tokenB).balanceOf(address(this));
+        uint256 sendableAmount = balanceBAfter - balanceBBefore;
+        uint256 commission = _calculateEcosystemCommission(sendableAmount);
+        uint256 dueToRecipient = sendableAmount - commission;
+        uint256 fees = commission + balanceBBefore;
+
+        if (sendableAmount < amountOut) revert InsufficientAmountOut();
+
+        if (tokenB == address(weth)) {
+            // Send to recipient
+            _unwrapAndSendEther(dueToRecipient, to);
+            if (fees > 0) _unwrapAndSendEther(fees, owner());
+        } else {
+            // Send to recipient
+            IERC20(tokenB).transfer(to, dueToRecipient);
+            if (fees > 0) IERC20(tokenB).transfer(owner(), fees);
+        }
     }
 }
