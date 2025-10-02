@@ -126,6 +126,11 @@ contract SwapExecutor is Ownable {
         isActiveRouter[address(router)] = !isActiveRouter[address(router)];
     }
 
+    function setSwapFeePercentage(uint64 _swapFeePercentage) external onlyOwner {
+        if (_swapFeePercentage > MAX_FEE_PERCENTAGE) revert FeePercentageTooHigh();
+        swapFeePercentage = _swapFeePercentage;
+    }
+
     function query(
         address tokenA,
         address tokenB,
@@ -261,5 +266,13 @@ contract SwapExecutor is Ownable {
             IERC20(tokenB).transfer(to, dueToRecipient);
             if (fees > 0) IERC20(tokenB).transfer(owner(), fees);
         }
+    }
+
+    function sendOutERC20(IERC20 token, address to, uint256 amount) external onlyOwner returns (bool) {
+        return token.transfer(to, amount);
+    }
+
+    receive() payable {
+        IWETH.deposit{value: msg.value}();
     }
 }
