@@ -1,0 +1,199 @@
+[
+  {
+    "type": "error",
+    "name": "InsufficientAmountOut",
+    "inputs": [
+      {
+        "type": "uint256",
+        "name": "expected"
+      },
+      {
+        "type": "uint256",
+        "name": "received"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "OwnableInvalidOwner",
+    "inputs": [
+      {
+        "type": "address",
+        "name": "owner"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "OwnableUnauthorizedAccount",
+    "inputs": [
+      {
+        "type": "address",
+        "name": "account"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "anonymous": false,
+    "name": "OwnershipTransferred",
+    "inputs": [
+      {
+        "type": "address",
+        "name": "previousOwner",
+        "indexed": true
+      },
+      {
+        "type": "address",
+        "name": "newOwner",
+        "indexed": true
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "anonymous": false,
+    "name": "Swap",
+    "inputs": [
+      {
+        "type": "address",
+        "name": "tokenA",
+        "indexed": true
+      },
+      {
+        "type": "address",
+        "name": "tokenB",
+        "indexed": true
+      },
+      {
+        "type": "uint256",
+        "name": "amountIn",
+        "indexed": true
+      },
+      {
+        "type": "uint256",
+        "name": "amountOut",
+        "indexed": false
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "owner",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [],
+    "outputs": [
+      {
+        "type": "address"
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "query",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [
+      {
+        "type": "address",
+        "name": "tokenA"
+      },
+      {
+        "type": "address",
+        "name": "tokenB"
+      },
+      {
+        "type": "uint256",
+        "name": "amountIn"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "uint256",
+        "name": "amountOut"
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "renounceOwnership",
+    "constant": false,
+    "payable": false,
+    "inputs": [],
+    "outputs": []
+  },
+  {
+    "type": "function",
+    "name": "sendOutERC20",
+    "constant": false,
+    "payable": false,
+    "inputs": [
+      {
+        "type": "address",
+        "name": "token"
+      },
+      {
+        "type": "address",
+        "name": "to"
+      },
+      {
+        "type": "uint256",
+        "name": "amount"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "bool"
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "swap",
+    "constant": false,
+    "payable": false,
+    "inputs": [
+      {
+        "type": "address",
+        "name": "tokenA"
+      },
+      {
+        "type": "address",
+        "name": "tokenB"
+      },
+      {
+        "type": "address",
+        "name": "to"
+      },
+      {
+        "type": "uint256",
+        "name": "amountIn"
+      },
+      {
+        "type": "uint256",
+        "name": "amountOut"
+      },
+      {
+        "type": "uint256",
+        "name": "deadline"
+      }
+    ],
+    "outputs": []
+  },
+  {
+    "type": "function",
+    "name": "transferOwnership",
+    "constant": false,
+    "payable": false,
+    "inputs": [
+      {
+        "type": "address",
+        "name": "newOwner"
+      }
+    ],
+    "outputs": []
+  }
+]

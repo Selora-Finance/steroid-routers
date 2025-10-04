@@ -64,13 +64,14 @@ contract SwapExecutor is Ownable {
         address tokenB,
         uint256 amountIn,
         uint256 amountOut,
-        bool exactAmountOut
+        bool exactAmountOut,
+        uint256 deadline
     ) private {
         if (!exactAmountOut) amountOut = 0;
         // Approve spend
         _approveTokenSpend(router, IERC20(tokenA), amountIn);
         // Swap to self
-        router.swap(tokenA, tokenB, address(this), amountIn, amountOut);
+        router.swap(tokenA, tokenB, address(this), amountIn, amountOut, deadline);
     }
 
     function _unwrapAndSendEther(uint256 amount, address to) private returns (bool sent) {
@@ -145,7 +146,7 @@ contract SwapExecutor is Ownable {
         }
     }
 
-    function _emptyQueryResults() private view returns (QueryResult[] memory) {
+    function _emptyQueryResults() private pure returns (QueryResult[] memory) {
         QueryResult[] memory emptyResult;
         return emptyResult;
     }
@@ -213,7 +214,8 @@ contract SwapExecutor is Ownable {
         address to,
         uint256 amountIn,
         uint256 amountOut,
-        SwapType swapType
+        SwapType swapType,
+        uint256 deadline
     ) external payable {
         // Wrap if first token is Ether or zero address
         if (tokenA == ETHER || tokenA == address(0)) {
@@ -244,7 +246,8 @@ contract SwapExecutor is Ownable {
                 route.tokenOut,
                 route.amountIn,
                 route.amountOut,
-                swapType == SwapType.EXACT_OUT
+                swapType == SwapType.EXACT_OUT,
+                deadline
             );
         }
 
@@ -272,7 +275,7 @@ contract SwapExecutor is Ownable {
         return token.transfer(to, amount);
     }
 
-    receive() payable {
-        IWETH.deposit{value: msg.value}();
+    receive() external payable {
+        weth.deposit{value: msg.value}();
     }
 }

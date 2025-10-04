@@ -5,9 +5,11 @@ import '../interfaces/ISeloraV2Router.sol';
 import '../interfaces/ISeloraPool.sol';
 
 contract SeloraV2Router is BaseRouter {
+    using SafeERC20 for IERC20;
+
     ISeloraV2Router public immutable baseRouter;
 
-    constructor(ISeloraV2Router _baseRouter) {
+    constructor(ISeloraV2Router _baseRouter) BaseRouter() {
         baseRouter = _baseRouter;
     }
 
@@ -53,7 +55,20 @@ contract SeloraV2Router is BaseRouter {
         (, amountOut) = _getBestDirectRoute(tokenA, tokenB, amountIn);
     }
 
-    function routerId() public view virtual override returns (bytes32 _routerId) {
-        _routerId = keccak256('selorav2');
+    function _swap(
+        address tokenA,
+        address tokenB,
+        address to,
+        uint256 amountIn,
+        uint256 amountOut,
+        uint256 deadline
+    ) internal virtual override {
+        (ISeloraV2Router.Route memory route, ) = _getBestDirectRoute(tokenA, tokenB, amountIn);
+        ISeloraV2Router.Route[] memory routes;
+        routes[0] = route;
+        // Allow base router to spend amount
+        IERC20(tokenA).approve(address(baseRouter), amountIn);
+        // Swap
+        baseRouter.swapExactTokensForTokensSupportingFeeOnTransferTokens(amountIn, amountOut, routes, to, deadline);
     }
 }

@@ -1,0 +1,102 @@
+[
+  {
+    "type": "error",
+    "name": "InsufficientAmountOut",
+    "inputs": [
+      {
+        "type": "uint256",
+        "name": "expected"
+      },
+      {
+        "type": "uint256",
+        "name": "received"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "anonymous": false,
+    "name": "Swap",
+    "inputs": [
+      {
+        "type": "address",
+        "name": "tokenA",
+        "indexed": true
+      },
+      {
+        "type": "address",
+        "name": "tokenB",
+        "indexed": true
+      },
+      {
+        "type": "uint256",
+        "name": "amountIn",
+        "indexed": true
+      },
+      {
+        "type": "uint256",
+        "name": "amountOut",
+        "indexed": false
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "query",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [
+      {
+        "type": "address",
+        "name": "tokenA"
+      },
+      {
+        "type": "address",
+        "name": "tokenB"
+      },
+      {
+        "type": "uint256",
+        "name": "amountIn"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "swap",
+    "constant": false,
+    "payable": false,
+    "inputs": [
+      {
+        "type": "address",
+        "name": "tokenA"
+      },
+      {
+        "type": "address",
+        "name": "tokenB"
+      },
+      {
+        "type": "address",
+        "name": "to"
+      },
+      {
+        "type": "uint256",
+        "name": "amountIn"
+      },
+      {
+        "type": "uint256",
+        "name": "amountOut"
+      },
+      {
+        "type": "uint256",
+        "name": "deadline"
+      }
+    ],
+    "outputs": []
+  }
+]
