@@ -1,0 +1,196 @@
+[
+  {
+    "type": "function",
+    "name": "defaultFactory",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [],
+    "outputs": [
+      {
+        "type": "address"
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "getAmountsOut",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [
+      {
+        "type": "uint256",
+        "name": "amountIn"
+      },
+      {
+        "type": "tuple[]",
+        "name": "routes",
+        "components": [
+          {
+            "type": "address",
+            "name": "from"
+          },
+          {
+            "type": "address",
+            "name": "to"
+          },
+          {
+            "type": "bool",
+            "name": "stable"
+          },
+          {
+            "type": "address",
+            "name": "factory"
+          }
+        ]
+      }
+    ],
+    "outputs": [
+      {
+        "type": "uint256[]",
+        "name": "amounts"
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "getReserves",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [
+      {
+        "type": "address",
+        "name": "tokenA"
+      },
+      {
+        "type": "address",
+        "name": "tokenB"
+      },
+      {
+        "type": "bool",
+        "name": "stable"
+      },
+      {
+        "type": "address",
+        "name": "_factory"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "uint256",
+        "name": "reserveA"
+      },
+      {
+        "type": "uint256",
+        "name": "reserveB"
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "poolFor",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [
+      {
+        "type": "address",
+        "name": "tokenA"
+      },
+      {
+        "type": "address",
+        "name": "tokenB"
+      },
+      {
+        "type": "bool",
+        "name": "stable"
+      },
+      {
+        "type": "address",
+        "name": "_factory"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "address",
+        "name": "pool"
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "sortTokens",
+    "constant": true,
+    "stateMutability": "pure",
+    "payable": false,
+    "inputs": [
+      {
+        "type": "address",
+        "name": "tokenA"
+      },
+      {
+        "type": "address",
+        "name": "tokenB"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "address",
+        "name": "token0"
+      },
+      {
+        "type": "address",
+        "name": "token1"
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "swapExactTokensForTokensSupportingFeeOnTransferTokens",
+    "constant": false,
+    "payable": false,
+    "inputs": [
+      {
+        "type": "uint256",
+        "name": "amountIn"
+      },
+      {
+        "type": "uint256",
+        "name": "amountOutMin"
+      },
+      {
+        "type": "tuple[]",
+        "name": "routes",
+        "components": [
+          {
+            "type": "address",
+            "name": "from"
+          },
+          {
+            "type": "address",
+            "name": "to"
+          },
+          {
+            "type": "bool",
+            "name": "stable"
+          },
+          {
+            "type": "address",
+            "name": "factory"
+          }
+        ]
+      },
+      {
+        "type": "address",
+        "name": "to"
+      },
+      {
+        "type": "uint256",
+        "name": "deadline"
+      }
+    ],
+    "outputs": []
+  }
+]

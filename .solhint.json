@@ -1,0 +1,8 @@
+{
+  "extends": "solhint:recommended",
+  "rules": {
+    "no-unused-import": "error",
+    "no-empty-blocks": "error",
+    "quotes": ["error", "single"]
+  }
+}

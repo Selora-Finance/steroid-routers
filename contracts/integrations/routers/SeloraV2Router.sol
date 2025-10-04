@@ -1,0 +1,74 @@
+pragma solidity ^0.8.0;
+
+import '../BaseRouter.sol';
+import '../interfaces/ISeloraV2Router.sol';
+import '../interfaces/ISeloraPool.sol';
+
+contract SeloraV2Router is BaseRouter {
+    using SafeERC20 for IERC20;
+
+    ISeloraV2Router public immutable baseRouter;
+
+    constructor(ISeloraV2Router _baseRouter) BaseRouter() {
+        baseRouter = _baseRouter;
+    }
+
+    function _getBestDirectRoute(
+        address tokenA,
+        address tokenB,
+        uint256 amountIn
+    ) private view returns (ISeloraV2Router.Route memory _route, uint256 amountOut) {
+        address factory = baseRouter.defaultFactory();
+        address pool = baseRouter.poolFor(tokenA, tokenB, true, factory);
+        uint256 aOut;
+
+        if (pool != address(0)) {
+            _route.from = tokenA;
+            _route.to = tokenB;
+            _route.stable = true;
+            _route.factory = factory;
+
+            aOut = ISeloraPool(pool).getAmountOut(amountIn, tokenA);
+            amountOut = aOut;
+        }
+
+        pool = baseRouter.poolFor(tokenA, tokenB, false, factory);
+
+        if (pool != address(0)) {
+            aOut = ISeloraPool(pool).getAmountOut(amountIn, tokenA);
+            if (aOut > amountOut) {
+                amountOut = aOut;
+
+                _route.from = tokenA;
+                _route.to = tokenB;
+                _route.stable = false;
+                _route.factory = factory;
+            }
+        }
+    }
+
+    function _query(
+        address tokenA,
+        address tokenB,
+        uint256 amountIn
+    ) internal view virtual override returns (uint256 amountOut) {
+        (, amountOut) = _getBestDirectRoute(tokenA, tokenB, amountIn);
+    }
+
+    function _swap(
+        address tokenA,
+        address tokenB,
+        address to,
+        uint256 amountIn,
+        uint256 amountOut,
+        uint256 deadline
+    ) internal virtual override {
+        (ISeloraV2Router.Route memory route, ) = _getBestDirectRoute(tokenA, tokenB, amountIn);
+        ISeloraV2Router.Route[] memory routes;
+        routes[0] = route;
+        // Allow base router to spend amount
+        IERC20(tokenA).approve(address(baseRouter), amountIn);
+        // Swap
+        baseRouter.swapExactTokensForTokensSupportingFeeOnTransferTokens(amountIn, amountOut, routes, to, deadline);
+    }
+}
