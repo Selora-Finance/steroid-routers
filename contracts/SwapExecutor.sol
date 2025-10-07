@@ -25,7 +25,7 @@ contract SwapExecutor is Ownable {
     uint64 public swapFeePercentage;
     IWETH public weth;
 
-    address public constant ETHER = address(0x000);
+    address public constant ETHER = address(0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE);
     address[] public trustedTokens;
     uint64 public constant MAX_FEE_PERCENTAGE = 5000; // 5%
     uint64 public constant MAX_PERCENTAGE = 100000; // 100%
