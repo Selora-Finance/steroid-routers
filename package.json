@@ -26,6 +26,7 @@
     "format": "prettier --write .",
     "compile": "rm -rf artifacts && npx hardhat compile",
     "deploy": "bun hardhat run scripts/DeployCore.ts",
+    "deploy:units": "bun hardhat run scripts/DeployUnits.ts",
     "deploy:integrations": "bun hardhat run scripts/DeployMainIntegrations.ts"
   }
 }

@@ -1,0 +1,415 @@
+[
+  {
+    "type": "constructor",
+    "payable": false,
+    "inputs": [
+      {
+        "type": "address",
+        "name": "newOwner"
+      },
+      {
+        "type": "address",
+        "name": "_baseRouter"
+      },
+      {
+        "type": "uint64",
+        "name": "_swapFeePercentage"
+      },
+      {
+        "type": "address",
+        "name": "_weth"
+      },
+      {
+        "type": "address[]",
+        "name": "_trustedTokens"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "FeePercentageTooHigh",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "InsufficientAmountOut",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "InvalidContract",
+    "inputs": [
+      {
+        "type": "address",
+        "name": "addr"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "NoSwapRoute",
+    "inputs": [
+      {
+        "type": "address",
+        "name": "tokenA"
+      },
+      {
+        "type": "address",
+        "name": "tokenB"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "OwnableInvalidOwner",
+    "inputs": [
+      {
+        "type": "address",
+        "name": "owner"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "OwnableUnauthorizedAccount",
+    "inputs": [
+      {
+        "type": "address",
+        "name": "account"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "anonymous": false,
+    "name": "OwnershipTransferred",
+    "inputs": [
+      {
+        "type": "address",
+        "name": "previousOwner",
+        "indexed": true
+      },
+      {
+        "type": "address",
+        "name": "newOwner",
+        "indexed": true
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "ETHER",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [],
+    "outputs": [
+      {
+        "type": "address"
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "MAX_FEE_PERCENTAGE",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [],
+    "outputs": [
+      {
+        "type": "uint64"
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "MAX_PERCENTAGE",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [],
+    "outputs": [
+      {
+        "type": "uint64"
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "baseRouter",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [],
+    "outputs": [
+      {
+        "type": "address"
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "execute",
+    "constant": false,
+    "stateMutability": "payable",
+    "payable": true,
+    "inputs": [
+      {
+        "type": "address",
+        "name": "tokenA"
+      },
+      {
+        "type": "address",
+        "name": "tokenB"
+      },
+      {
+        "type": "address",
+        "name": "to"
+      },
+      {
+        "type": "uint256",
+        "name": "amountIn"
+      },
+      {
+        "type": "uint256",
+        "name": "amountOut"
+      },
+      {
+        "type": "uint8",
+        "name": "swapType"
+      },
+      {
+        "type": "uint256",
+        "name": "deadline"
+      }
+    ],
+    "outputs": []
+  },
+  {
+    "type": "function",
+    "name": "findBestRoute",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [
+      {
+        "type": "address",
+        "name": "tokenA"
+      },
+      {
+        "type": "address",
+        "name": "tokenB"
+      },
+      {
+        "type": "uint256",
+        "name": "amountIn"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "tuple[]",
+        "name": "results",
+        "components": [
+          {
+            "type": "address",
+            "name": "tokenIn"
+          },
+          {
+            "type": "address",
+            "name": "tokenOut"
+          },
+          {
+            "type": "uint256",
+            "name": "amountIn"
+          },
+          {
+            "type": "uint256",
+            "name": "amountOut"
+          },
+          {
+            "type": "address",
+            "name": "pool"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "owner",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [],
+    "outputs": [
+      {
+        "type": "address"
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "query",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [
+      {
+        "type": "address",
+        "name": "tokenA"
+      },
+      {
+        "type": "address",
+        "name": "tokenB"
+      },
+      {
+        "type": "uint256",
+        "name": "amountIn"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "tuple",
+        "name": "bestResult",
+        "components": [
+          {
+            "type": "address",
+            "name": "tokenIn"
+          },
+          {
+            "type": "address",
+            "name": "tokenOut"
+          },
+          {
+            "type": "uint256",
+            "name": "amountIn"
+          },
+          {
+            "type": "uint256",
+            "name": "amountOut"
+          },
+          {
+            "type": "address",
+            "name": "pool"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "renounceOwnership",
+    "constant": false,
+    "payable": false,
+    "inputs": [],
+    "outputs": []
+  },
+  {
+    "type": "function",
+    "name": "sendOutERC20",
+    "constant": false,
+    "payable": false,
+    "inputs": [
+      {
+        "type": "address",
+        "name": "token"
+      },
+      {
+        "type": "address",
+        "name": "to"
+      },
+      {
+        "type": "uint256",
+        "name": "amount"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "bool"
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "setSwapFeePercentage",
+    "constant": false,
+    "payable": false,
+    "inputs": [
+      {
+        "type": "uint64",
+        "name": "_swapFeePercentage"
+      }
+    ],
+    "outputs": []
+  },
+  {
+    "type": "function",
+    "name": "setTrustedTokens",
+    "constant": false,
+    "payable": false,
+    "inputs": [
+      {
+        "type": "address[]",
+        "name": "_trustedTokens"
+      }
+    ],
+    "outputs": []
+  },
+  {
+    "type": "function",
+    "name": "swapFeePercentage",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [],
+    "outputs": [
+      {
+        "type": "uint64"
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "transferOwnership",
+    "constant": false,
+    "payable": false,
+    "inputs": [
+      {
+        "type": "address",
+        "name": "newOwner"
+      }
+    ],
+    "outputs": []
+  },
+  {
+    "type": "function",
+    "name": "trustedTokens",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [
+      {
+        "type": "uint256"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "address"
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "weth",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [],
+    "outputs": [
+      {
+        "type": "address"
+      }
+    ]
+  }
+]

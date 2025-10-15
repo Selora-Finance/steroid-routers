@@ -20,5 +20,18 @@
         "type": "uint256"
       }
     ]
+  },
+  {
+    "type": "function",
+    "name": "stable",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [],
+    "outputs": [
+      {
+        "type": "bool"
+      }
+    ]
   }
 ]
