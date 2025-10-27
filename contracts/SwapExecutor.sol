@@ -147,8 +147,21 @@ contract SwapExecutor is Ownable {
     }
 
     function _emptyQueryResults() private pure returns (QueryResult[] memory) {
-        QueryResult[] memory emptyResult;
+        QueryResult[] memory emptyResult = new QueryResult[](0);
         return emptyResult;
+    }
+
+    function _appendQueryResult(
+        QueryResult[] memory previousResults,
+        QueryResult memory result
+    ) private pure returns (QueryResult[] memory) {
+        QueryResult[] memory finalResults = new QueryResult[](previousResults.length + 1);
+
+        // Copy previous results
+        for (uint i = 0; i < previousResults.length; i++) finalResults[i] = previousResults[i];
+
+        finalResults[previousResults.length] = result;
+        return finalResults;
     }
 
     function _findBestRoute(
@@ -159,13 +172,9 @@ contract SwapExecutor is Ownable {
         bool skipTrustedTokens
     ) private view returns (QueryResult[] memory) {
         QueryResult memory firstQR = query(tokenA, tokenB, amountIn);
-        QueryResult[] memory finalResults = previousResults;
+        QueryResult[] memory finalResults = _appendQueryResult(previousResults, firstQR);
 
-        if (firstQR.amountOut != 0) {
-            if (finalResults.length == 0) finalResults[0] = firstQR;
-            else finalResults[finalResults.length] = firstQR;
-            return finalResults; // Return earlier
-        }
+        if (firstQR.amountOut != 0) return finalResults; // Return earlier
 
         // Only check if we don't want to skip trusted tokens
         if (!skipTrustedTokens) {
@@ -173,8 +182,8 @@ contract SwapExecutor is Ownable {
                 if (trustedTokens[i] == tokenA) continue;
                 QueryResult memory bestResult = query(tokenA, trustedTokens[i], amountIn);
                 if (bestResult.amountOut == 0) continue;
-                if (finalResults.length == 0) finalResults[0] = bestResult;
-                else finalResults[finalResults.length] = bestResult;
+
+                finalResults = _appendQueryResult(finalResults, bestResult);
 
                 finalResults = _findBestRoute(
                     trustedTokens[i],
