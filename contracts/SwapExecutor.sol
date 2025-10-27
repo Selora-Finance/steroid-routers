@@ -93,12 +93,24 @@ contract SwapExecutor is Ownable {
         }
     }
 
-    function _filterActiveRouters() private view returns (IBaseRouter[] memory _routers) {
+    function _filterActiveRouters() private view returns (IBaseRouter[] memory) {
+        uint count = 0;
+        for (uint i = 0; i < routers.length; i++) {
+            if (isActiveRouter[address(routers[i])]) count++;
+        }
+
+        if (count == 0) {
+            return new IBaseRouter[](0);
+        }
+
+        IBaseRouter[] memory active = new IBaseRouter[](count);
+        uint idx = 0;
         for (uint i = 0; i < routers.length; i++) {
             if (isActiveRouter[address(routers[i])]) {
-                _routers[_routers.length] = routers[i];
+                active[idx++] = routers[i];
             }
         }
+        return active;
     }
 
     function _query(
@@ -185,13 +197,9 @@ contract SwapExecutor is Ownable {
 
                 finalResults = _appendQueryResult(finalResults, bestResult);
 
-                finalResults = _findBestRoute(
-                    trustedTokens[i],
-                    tokenB,
-                    bestResult.amountOut,
-                    finalResults,
-                    trustedTokens[i] == trustedTokens[trustedTokens.length - 1]
-                ); // Recursion
+                bool isLast = (i + 1) == trustedTokens.length;
+
+                finalResults = _findBestRoute(trustedTokens[i], tokenB, bestResult.amountOut, finalResults, isLast); // Recursion
                 QueryResult memory newQR = finalResults[finalResults.length - 1];
                 address tokenOut = newQR.tokenOut;
                 uint256 amountOut = newQR.amountOut;
