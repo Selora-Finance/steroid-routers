@@ -4,6 +4,7 @@ import './interfaces/IWETH.sol';
 import '@openzeppelin/contracts/access/Ownable.sol';
 import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
 import './integrations/interfaces/ISeloraV2Router.sol';
+import './integrations/interfaces/ISeloraV2Factory.sol';
 import './integrations/interfaces/ISeloraPool.sol';
 
 contract V2SwapExecutor is Ownable {
@@ -23,6 +24,7 @@ contract V2SwapExecutor is Ownable {
     }
 
     ISeloraV2Router public immutable baseRouter;
+    ISeloraV2Factory public immutable baseFactory;
     uint64 public swapFeePercentage;
     IWETH public weth;
 
@@ -44,6 +46,7 @@ contract V2SwapExecutor is Ownable {
         address[] memory _trustedTokens
     ) Ownable(newOwner) {
         baseRouter = _baseRouter;
+        baseFactory = ISeloraV2Factory(_baseRouter.defaultFactory());
         setTrustedTokens(_trustedTokens);
 
         if (_swapFeePercentage > MAX_FEE_PERCENTAGE) revert FeePercentageTooHigh();
@@ -97,8 +100,7 @@ contract V2SwapExecutor is Ownable {
         bool stable,
         uint256 amountIn
     ) private view returns (QueryResult memory result) {
-        address factory = baseRouter.defaultFactory();
-        address pool = baseRouter.poolFor(tokenA, tokenB, stable, factory);
+        address pool = baseFactory.getPool(tokenA, tokenB, stable);
         uint256 aOut;
 
         if (pool != address(0)) aOut = ISeloraPool(pool).getAmountOut(amountIn, tokenA);

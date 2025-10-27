@@ -137,6 +137,19 @@
   },
   {
     "type": "function",
+    "name": "baseFactory",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [],
+    "outputs": [
+      {
+        "type": "address"
+      }
+    ]
+  },
+  {
+    "type": "function",
     "name": "baseRouter",
     "constant": true,
     "stateMutability": "view",
