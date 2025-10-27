@@ -66,7 +66,7 @@ contract SeloraV2Router is BaseRouter {
         uint256 deadline
     ) internal virtual override {
         (ISeloraV2Router.Route memory route, ) = _getBestDirectRoute(tokenA, tokenB, amountIn);
-        ISeloraV2Router.Route[] memory routes;
+        ISeloraV2Router.Route[] memory routes = new ISeloraV2Router.Route[](1);
         routes[0] = route;
         // Allow base router to spend amount
         IERC20(tokenA).approve(address(baseRouter), amountIn);

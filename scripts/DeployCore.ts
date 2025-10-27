@@ -1,5 +1,5 @@
 import { network } from 'hardhat';
-import { createWriteStream, existsSync } from 'fs';
+import { createWriteStream, existsSync, readFileSync } from 'fs';
 import { writeFile } from 'fs/promises';
 import { join } from 'path';
 import { SeloraV2Router, SeloraV3Router, SwapExecutor } from '../types/ethers-contracts';
@@ -61,7 +61,14 @@ async function core() {
       ws.write(JSON.stringify(output, null, 2));
       ws.end();
     } else {
-      await writeFile(outputFile, JSON.stringify(output, null, 2));
+      // Read file's content
+      const content = readFileSync(outputFile);
+      const out = JSON.parse(content.toString());
+      // Mutate file
+      Object.keys(output).forEach(key => {
+        out[key] = output[key as keyof typeof output];
+      });
+      await writeFile(outputFile, JSON.stringify(out, null, 2));
     }
   } catch (err) {
     console.error(`Error writing output file: ${err}`);
