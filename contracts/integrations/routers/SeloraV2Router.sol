@@ -2,15 +2,18 @@ pragma solidity ^0.8.0;
 
 import '../BaseRouter.sol';
 import '../interfaces/ISeloraV2Router.sol';
+import '../interfaces/ISeloraV2Factory.sol';
 import '../interfaces/ISeloraPool.sol';
 
 contract SeloraV2Router is BaseRouter {
     using SafeERC20 for IERC20;
 
     ISeloraV2Router public immutable baseRouter;
+    ISeloraV2Factory public immutable baseFactory;
 
     constructor(ISeloraV2Router _baseRouter) BaseRouter() {
         baseRouter = _baseRouter;
+        baseFactory = ISeloraV2Factory(_baseRouter.defaultFactory());
     }
 
     function _getBestDirectRoute(
@@ -18,21 +21,21 @@ contract SeloraV2Router is BaseRouter {
         address tokenB,
         uint256 amountIn
     ) private view returns (ISeloraV2Router.Route memory _route, uint256 amountOut) {
-        address factory = baseRouter.defaultFactory();
-        address pool = baseRouter.poolFor(tokenA, tokenB, true, factory);
+        address pool = baseFactory.getPool(tokenA, tokenB, true);
         uint256 aOut;
+
+        _route.factory = address(baseFactory);
 
         if (pool != address(0)) {
             _route.from = tokenA;
             _route.to = tokenB;
             _route.stable = true;
-            _route.factory = factory;
 
             aOut = ISeloraPool(pool).getAmountOut(amountIn, tokenA);
             amountOut = aOut;
         }
 
-        pool = baseRouter.poolFor(tokenA, tokenB, false, factory);
+        pool = baseFactory.getPool(tokenA, tokenB, false);
 
         if (pool != address(0)) {
             aOut = ISeloraPool(pool).getAmountOut(amountIn, tokenA);
@@ -42,7 +45,6 @@ contract SeloraV2Router is BaseRouter {
                 _route.from = tokenA;
                 _route.to = tokenB;
                 _route.stable = false;
-                _route.factory = factory;
             }
         }
     }
