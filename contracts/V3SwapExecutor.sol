@@ -102,23 +102,25 @@ contract V3SwapExecutor is Ownable {
     }
 
     function _query(address tokenA, address tokenB, uint256 amountIn) private view returns (QueryResult memory result) {
-        int24[] memory tickSpacings = baseFactory.tickSpacings();
-        for (uint i = 0; i < tickSpacings.length; i++) {
-            address pool = baseFactory.getPool(tokenA, tokenB, tickSpacings[i]);
-            if (pool == address(0)) continue;
-            uint256 balanceA = _getBalance(tokenA, pool);
-            uint256 balanceB = _getBalance(tokenB, pool);
-            if (balanceA == 0 || balanceB == 0) continue;
-            // Calculate price of token A in terms of B
-            uint8 decimalsA = _getDecimals(tokenA);
-            uint256 priceA = (balanceB * 10 ** decimalsA) / balanceA;
-            uint256 aOut = (amountIn * priceA) / (10 ** decimalsA);
-            if (aOut > result.amountOut) {
-                result.amountOut = aOut;
-                result.tickSpacing = tickSpacings[i];
-                result.tokenIn = tokenA;
-                result.tokenOut = tokenB;
-                result.amountIn = amountIn;
+        if (tokenA != tokenB && amountIn != 0) {
+            int24[] memory tickSpacings = baseFactory.tickSpacings();
+            for (uint i = 0; i < tickSpacings.length; i++) {
+                address pool = baseFactory.getPool(tokenA, tokenB, tickSpacings[i]);
+                if (pool == address(0)) continue;
+                uint256 balanceA = _getBalance(tokenA, pool);
+                uint256 balanceB = _getBalance(tokenB, pool);
+                if (balanceA == 0 || balanceB == 0) continue;
+                // Calculate price of token A in terms of B
+                uint8 decimalsA = _getDecimals(tokenA);
+                uint256 priceA = (balanceB * 10 ** decimalsA) / balanceA;
+                uint256 aOut = (amountIn * priceA) / (10 ** decimalsA);
+                if (aOut > result.amountOut) {
+                    result.amountOut = aOut;
+                    result.tickSpacing = tickSpacings[i];
+                    result.tokenIn = tokenA;
+                    result.tokenOut = tokenB;
+                    result.amountIn = amountIn;
+                }
             }
         }
     }

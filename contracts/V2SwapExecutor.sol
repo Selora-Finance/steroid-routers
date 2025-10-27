@@ -100,18 +100,20 @@ contract V2SwapExecutor is Ownable {
         bool stable,
         uint256 amountIn
     ) private view returns (QueryResult memory result) {
-        address pool = baseFactory.getPool(tokenA, tokenB, stable);
-        uint256 aOut;
+        if (tokenA != tokenB && amountIn != 0) {
+            address pool = baseFactory.getPool(tokenA, tokenB, stable);
+            uint256 aOut;
 
-        if (pool != address(0)) aOut = ISeloraPool(pool).getAmountOut(amountIn, tokenA);
+            if (pool != address(0)) aOut = ISeloraPool(pool).getAmountOut(amountIn, tokenA);
 
-        result = QueryResult({
-            tokenIn: tokenA,
-            tokenOut: tokenB,
-            amountIn: amountIn,
-            amountOut: aOut,
-            pool: ISeloraPool(pool)
-        });
+            result = QueryResult({
+                tokenIn: tokenA,
+                tokenOut: tokenB,
+                amountIn: amountIn,
+                amountOut: aOut,
+                pool: ISeloraPool(pool)
+            });
+        }
     }
 
     function setTrustedTokens(address[] memory _trustedTokens) public onlyOwner {
