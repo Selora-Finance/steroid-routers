@@ -171,13 +171,9 @@ contract V2SwapExecutor is Ownable {
 
                 finalResults = _appendQueryResult(finalResults, bestResult);
 
-                finalResults = _findBestRoute(
-                    trustedTokens[i],
-                    tokenB,
-                    bestResult.amountOut,
-                    finalResults,
-                    trustedTokens[i] == trustedTokens[trustedTokens.length - 1]
-                ); // Recursion
+                bool isLast = (i + 1) == trustedTokens.length;
+
+                finalResults = _findBestRoute(trustedTokens[i], tokenB, bestResult.amountOut, finalResults, isLast); // Recursion
                 QueryResult memory newQR = finalResults[finalResults.length - 1];
                 address tokenOut = newQR.tokenOut;
                 uint256 amountOut = newQR.amountOut;
