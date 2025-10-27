@@ -21,30 +21,32 @@ contract SeloraV2Router is BaseRouter {
         address tokenB,
         uint256 amountIn
     ) private view returns (ISeloraV2Router.Route memory _route, uint256 amountOut) {
-        address pool = baseFactory.getPool(tokenA, tokenB, true);
-        uint256 aOut;
+        if (tokenA != tokenB && amountIn != 0) {
+            address pool = baseFactory.getPool(tokenA, tokenB, true);
+            uint256 aOut;
 
-        _route.factory = address(baseFactory);
+            _route.factory = address(baseFactory);
 
-        if (pool != address(0)) {
-            _route.from = tokenA;
-            _route.to = tokenB;
-            _route.stable = true;
-
-            aOut = ISeloraPool(pool).getAmountOut(amountIn, tokenA);
-            amountOut = aOut;
-        }
-
-        pool = baseFactory.getPool(tokenA, tokenB, false);
-
-        if (pool != address(0)) {
-            aOut = ISeloraPool(pool).getAmountOut(amountIn, tokenA);
-            if (aOut > amountOut) {
-                amountOut = aOut;
-
+            if (pool != address(0)) {
                 _route.from = tokenA;
                 _route.to = tokenB;
-                _route.stable = false;
+                _route.stable = true;
+
+                aOut = ISeloraPool(pool).getAmountOut(amountIn, tokenA);
+                amountOut = aOut;
+            }
+
+            pool = baseFactory.getPool(tokenA, tokenB, false);
+
+            if (pool != address(0)) {
+                aOut = ISeloraPool(pool).getAmountOut(amountIn, tokenA);
+                if (aOut > amountOut) {
+                    amountOut = aOut;
+
+                    _route.from = tokenA;
+                    _route.to = tokenB;
+                    _route.stable = false;
+                }
             }
         }
     }
