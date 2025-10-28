@@ -41,7 +41,7 @@ abstract contract BaseRouter is IBaseRouter, Ownable {
         // Transfer token A from caller to the router
         IERC20(tokenA).transferFrom(msg.sender, address(this), amountIn);
         uint256 balanceBefore = IERC20(tokenB).balanceOf(to);
-        _swap(tokenA, tokenA, to, amountIn, amountOut, deadline);
+        _swap(tokenA, tokenB, to, amountIn, amountOut, deadline);
         uint256 balanceAfter = IERC20(tokenB).balanceOf(to);
         uint256 amountReceived = balanceAfter - balanceBefore;
 
