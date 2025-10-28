@@ -179,9 +179,10 @@ contract V3SwapExecutor is Ownable {
         bool skipTrustedTokens
     ) private view returns (QueryResult[] memory) {
         QueryResult memory firstQR = query(tokenA, tokenB, amountIn);
-        QueryResult[] memory finalResults = _appendQueryResult(previousResults, firstQR);
+        QueryResult[] memory finalResults = previousResults;
 
         if (firstQR.amountOut != 0) {
+            finalResults = _appendQueryResult(finalResults, firstQR);
             return finalResults; // Return earlier
         }
 
