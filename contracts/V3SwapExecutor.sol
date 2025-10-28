@@ -160,6 +160,17 @@ contract V3SwapExecutor is Ownable {
         return finalResults;
     }
 
+    function _tokenIsWithinPath(QueryResult[] memory results, address token) private pure returns (bool isWithinPath) {
+        for (uint i = 0; i < results.length; i++) {
+            address tokenIn = results[i].tokenIn;
+            address tokenOut = results[i].tokenOut;
+            if (tokenIn == token || tokenOut == token) {
+                isWithinPath = true;
+                break;
+            }
+        }
+    }
+
     function _findBestRoute(
         address tokenA,
         address tokenB,
@@ -170,12 +181,18 @@ contract V3SwapExecutor is Ownable {
         QueryResult memory firstQR = query(tokenA, tokenB, amountIn);
         QueryResult[] memory finalResults = _appendQueryResult(previousResults, firstQR);
 
-        if (firstQR.amountOut != 0) return finalResults; // Return earlier
+        if (firstQR.amountOut != 0) {
+            return finalResults; // Return earlier
+        }
 
         // Only check if we don't want to skip trusted tokens
         if (!skipTrustedTokens) {
             for (uint i = 0; i < trustedTokens.length; i++) {
-                if (trustedTokens[i] == tokenA) continue;
+                if (
+                    trustedTokens[i] == tokenA ||
+                    trustedTokens[i] == tokenB ||
+                    _tokenIsWithinPath(finalResults, trustedTokens[i])
+                ) continue;
                 QueryResult memory bestResult = query(tokenA, trustedTokens[i], amountIn);
                 if (bestResult.amountOut == 0) continue;
 
