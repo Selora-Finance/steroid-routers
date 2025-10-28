@@ -289,6 +289,8 @@ contract V2SwapExecutor is Ownable {
     }
 
     receive() external payable {
-        weth.deposit{value: msg.value}();
+        if (msg.sender != address(weth)) {
+            weth.deposit{value: msg.value}();
+        }
     }
 }
