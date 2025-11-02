@@ -68,10 +68,8 @@ contract SeloraV3Router is BaseRouter {
         uint256 deadline
     ) internal virtual override {
         (int24 tickSpacing, ) = _getBestRoute(tokenA, tokenB, amountIn);
-        bytes4 selector;
-        bytes memory callBytes0;
+        bytes memory callBytes;
         if (amountOut == 0) {
-            selector = ISeloraV3Router.exactInputSingle.selector;
             ISeloraV3Router.ExactInputSingleParams memory params = ISeloraV3Router.ExactInputSingleParams(
                 tokenA,
                 tokenB,
@@ -82,9 +80,8 @@ contract SeloraV3Router is BaseRouter {
                 amountOut,
                 0
             );
-            callBytes0 = abi.encodeWithSelector(selector, params);
+            callBytes = abi.encodeWithSelector(ISeloraV3Router.exactInputSingle.selector, params);
         } else {
-            selector = ISeloraV3Router.exactOutputSingle.selector;
             ISeloraV3Router.ExactOutputSingleParams memory params = ISeloraV3Router.ExactOutputSingleParams(
                 tokenA,
                 tokenB,
@@ -95,21 +92,13 @@ contract SeloraV3Router is BaseRouter {
                 amountIn,
                 0
             );
-            callBytes0 = abi.encodeWithSelector(selector, params);
+            callBytes = abi.encodeWithSelector(ISeloraV3Router.exactOutputSingle.selector, params);
         }
-
-        bytes4 sweepSelector = bytes4(keccak256(bytes('sweepToken(address,uint256,address)')));
-        bytes memory callBytes1 = abi.encodeWithSelector(sweepSelector, tokenB, amountOut, to);
-        // Use multicall
-        bytes4 multicallSelector = bytes4(keccak256(bytes('multicall(bytes[])')));
-        bytes[2] memory allCallBytes;
-        allCallBytes[0] = callBytes0;
-        allCallBytes[1] = callBytes1;
 
         // Allow base router to spend amount
         IERC20(tokenA).approve(address(baseSwapRouter), amountIn);
 
-        (bool success, ) = address(baseSwapRouter).call(abi.encodeWithSelector(multicallSelector, allCallBytes));
+        (bool success, ) = address(baseSwapRouter).call(callBytes);
         require(success, 'Swap failed');
     }
 }
