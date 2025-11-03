@@ -264,8 +264,8 @@ contract V3SwapExecutor is Ownable {
                 route.tokenOut,
                 route.tickSpacing,
                 route.amountIn,
-                route.amountOut,
-                swapType == SwapType.EXACT_OUT,
+                route.tokenOut == tokenB ? amountOut : route.amountOut,
+                route.tokenOut == tokenB ? swapType == SwapType.EXACT_OUT : false,
                 deadline
             );
         }
