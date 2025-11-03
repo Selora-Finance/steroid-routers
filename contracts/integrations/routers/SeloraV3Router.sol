@@ -68,36 +68,20 @@ contract SeloraV3Router is BaseRouter {
         uint256 deadline
     ) internal virtual override {
         (int24 tickSpacing, ) = _getBestRoute(tokenA, tokenB, amountIn);
-        bytes memory callBytes;
-        if (amountOut == 0) {
-            ISeloraV3Router.ExactInputSingleParams memory params = ISeloraV3Router.ExactInputSingleParams(
-                tokenA,
-                tokenB,
-                tickSpacing,
-                to,
-                deadline,
-                amountIn,
-                amountOut,
-                0
-            );
-            callBytes = abi.encodeWithSelector(ISeloraV3Router.exactInputSingle.selector, params);
-        } else {
-            ISeloraV3Router.ExactOutputSingleParams memory params = ISeloraV3Router.ExactOutputSingleParams(
-                tokenA,
-                tokenB,
-                tickSpacing,
-                to,
-                deadline,
-                amountOut,
-                amountIn,
-                0
-            );
-            callBytes = abi.encodeWithSelector(ISeloraV3Router.exactOutputSingle.selector, params);
-        }
-
+        // Params
+        ISeloraV3Router.ExactInputSingleParams memory params = ISeloraV3Router.ExactInputSingleParams(
+            tokenA,
+            tokenB,
+            tickSpacing,
+            to,
+            deadline,
+            amountIn,
+            amountOut,
+            0
+        );
+        bytes memory callBytes = abi.encodeWithSelector(ISeloraV3Router.exactInputSingle.selector, params);
         // Allow base router to spend amount
         IERC20(tokenA).approve(address(baseSwapRouter), amountIn);
-
         (bool success, ) = address(baseSwapRouter).call(callBytes);
         require(success, 'Swap failed');
     }
