@@ -280,8 +280,8 @@ contract SwapExecutor is Ownable {
                 route.tokenIn,
                 route.tokenOut,
                 route.amountIn,
-                route.amountOut,
-                swapType == SwapType.EXACT_OUT,
+                route.tokenOut == tokenB ? amountOut : route.amountOut,
+                route.tokenOut == tokenB ? swapType == SwapType.EXACT_OUT : false,
                 deadline
             );
         }

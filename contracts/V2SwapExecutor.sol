@@ -258,8 +258,8 @@ contract V2SwapExecutor is Ownable {
                 route.tokenOut,
                 route.pool.stable(),
                 route.amountIn,
-                route.amountOut,
-                swapType == SwapType.EXACT_OUT,
+                route.tokenOut == tokenB ? amountOut : route.amountOut,
+                route.tokenOut == tokenB ? swapType == SwapType.EXACT_OUT : false,
                 deadline
             );
         }
